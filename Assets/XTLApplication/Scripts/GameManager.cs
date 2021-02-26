@@ -5,18 +5,16 @@ using CotcSdk;
 
 public class GameManager : MonoBehaviour
 {
+    #region Properties
     private CotcGameObject _cotc;
     private Cloud _cloud;
+    public Cloud Cloud { get => _cloud; }
     private Gamer _gamer;
+    public Gamer Gamer { get => _gamer; set => _gamer = value; }
+    private DomainEventLoop _eventLoop;
+    #endregion //Properties
 
-    private bool _isCloudSetup = false;
-
-
-    private string _userEmail, _userPassword;
-    public string UserEmail { get => _userEmail; set => _userEmail = value; }
-    public string UserPassword { get => _userPassword; set => _userPassword = value; }
-
-
+    #region Monobehaviour
     void Start()
     {
         DontDestroyOnLoad(gameObject);
@@ -38,43 +36,63 @@ public class GameManager : MonoBehaviour
                 else
                     e.Abort();
             };
-
-            _isCloudSetup = true;
         });
     }
 
-    // Update is called once per frame
     void Update()
     {
         
     }
+    #endregion //Monobehaviour
 
-    public void LogIn()
+    #region Public Methods
+    public void LogIn(string email, string password)
     {
-        if(string.IsNullOrEmpty(UserEmail) || string.IsNullOrEmpty(UserPassword))
-        {
+        // check if user exists
+        _cloud.UserExists(LoginNetwork.Email.Describe(), email).Done(userExistsRes => {
 
-            return;
-        }
+            // connect the user
+            _cloud.Login(LoginNetwork.Email.Describe(), email, password, Bundle.CreateObject("preventRegistration", true)).Done(gamer => {
+                _gamer = gamer;
 
-        _cloud.Login(LoginNetwork.Email.Describe(), UserEmail, UserPassword).Done(gamer => {
-            Debug.Log(gamer);
+                if (_eventLoop != null)
+                    _eventLoop.Stop();
 
-            Debug.Log("Signed in succeeded (ID = " + gamer.GamerId + ")");
-            Debug.Log("Login data: " + gamer);
-            Debug.Log("Server time: " + gamer["servertime"]);
+                _eventLoop = gamer.StartEventLoop();
+                _eventLoop.ReceivedEvent += Loop_ReceivedEvent;
+                FindObjectOfType<UIController>().ActivePanel = UIController.UIPanel.None;
+
+            }, ex => {
+                CotcException error = (CotcException)ex;
+
+                // wrong credentials
+                if (error.HttpStatusCode == 400 && error.ServerData["name"] == "BadUserCredentials")
+                {
+                    Debug.LogWarning("test");
+                    FindObjectOfType<LoginController>().WrongUserCredentials();
+
+                    return;
+                }
+
+                Debug.LogError("Failed to login: " + error.ErrorCode + " (" + error.HttpStatusCode + ")");
+            });
+
         }, ex => {
-            // The exception should always be CotcException
             CotcException error = (CotcException)ex;
-            Debug.LogError("Failed to login: " + error.ErrorCode + " (" + error.HttpStatusCode + ")");
+
+            // user does not exists
+            if (error.HttpStatusCode == 400 && error.ServerData["name"] == "BadGamerID")
+            {
+                FindObjectOfType<LoginController>().UnableToFindPlayerId();
+
+                return;
+            }
+
+            Debug.LogError("Failed to check user: " + error.ErrorCode + " (" + error.ErrorInformation + ")");
         });
-    }
 
-    public void OnDestroy()
-    {
-        LogOut();
-    }
 
+    }
     public void LogOut()
     {
         if (_gamer != null)
@@ -90,4 +108,40 @@ public class GameManager : MonoBehaviour
             });
         }
     }
+
+    public void ResetPassword(string email)
+    {
+        _cloud.SendResetPasswordEmail(email, "nicolas.gaillard@viacesi.fr", "Reset your password", "You can login with this shortcode: [[SHORTCODE]]")
+        .Done(resetPasswordRes => {
+            Debug.Log("Short code sent");
+        }, ex => {
+            CotcException error = (CotcException)ex;
+            Debug.LogError("Short code sending failed due to error: " + error.ErrorCode + " (" + error.ErrorInformation + ")");
+        });
+    }
+
+    public void Register(string email, string password, string pseudo)
+    {
+        _cloud.Login(LoginNetwork.Email.Describe(), email, password).Done(gamer => {
+            _gamer = gamer;
+
+            if (_eventLoop != null)
+                _eventLoop.Stop();
+            _eventLoop = gamer.StartEventLoop();
+            _eventLoop.ReceivedEvent += Loop_ReceivedEvent;
+        }, ex => {
+            CotcException error = (CotcException)ex;
+            Debug.LogError("Failed to login: " + error.ErrorCode + " (" + error.HttpStatusCode + ")");
+        });
+    }
+    #endregion //Public Methods
+
+    #region Private methods
+    private void Loop_ReceivedEvent(DomainEventLoop sender, EventLoopArgs e)
+    {
+        Debug.Log("Received event of type " + e.Message.Type + ": " + e.Message.ToJson());
+    }
+    #endregion //Private Methods
+
+
 }
