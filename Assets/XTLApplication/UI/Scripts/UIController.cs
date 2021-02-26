@@ -47,8 +47,7 @@ public class UIController : MonoBehaviour
 
                 if(InformationPanelCoroutine != null)
                 {
-                    StopCoroutine(InformationPanelCoroutine);
-                    InformationPanel.SetActive(false);
+                    ClosePopup();
                 }
             }
         }
@@ -67,6 +66,12 @@ public class UIController : MonoBehaviour
     public void DisplayInformation(string message)
     {
         InformationPanelCoroutine = StartCoroutine(FadeInPanel(message));
+    }
+
+    public void ClosePopup()
+    {
+        StopCoroutine(InformationPanelCoroutine);
+        InformationPanel.SetActive(false);
     }
 
     private IEnumerator FadeInPanel(string message)

@@ -27,7 +27,7 @@ public class RegisterController : MonoBehaviour
     {
         if (!string.IsNullOrEmpty(EmailField.text) && !string.IsNullOrEmpty(PasswordField.text) && !string.IsNullOrEmpty(PseudoField.text))
         {
-            FindObjectOfType<GameManager>().Register(EmailField.text, PasswordField.text, PseudoField.text);
+            FindObjectOfType<CotCManager>().Register(EmailField.text, PasswordField.text, PseudoField.text);
         }
         else
         {

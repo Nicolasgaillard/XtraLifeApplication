@@ -15,7 +15,7 @@ public class ResetPasswordController : MonoBehaviour
     {
         if (!string.IsNullOrEmpty(EmailField.text))
         {
-            FindObjectOfType<GameManager>().ResetPassword(EmailField.text);
+            FindObjectOfType<CotCManager>().ResetPassword(EmailField.text);
         }
     }
 }

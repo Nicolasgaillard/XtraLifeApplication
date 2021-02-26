@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using CotcSdk;
 
-public class GameManager : MonoBehaviour
+public class CotCManager : MonoBehaviour
 {
     #region Properties
     private CotcGameObject _cotc;
