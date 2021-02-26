@@ -35,6 +35,11 @@ public class RegisterController : MonoBehaviour
         }
     }
 
+    public void Registered()
+    {
+        _controller.DisplayInformation(string.Format("Hi {0}, you are now login.", PseudoField.text));
+    }
+
     public void LogIn()
     {
         FindObjectOfType<UIController>().ActivePanel = UIController.UIPanel.Login;

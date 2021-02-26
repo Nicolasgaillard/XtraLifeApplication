@@ -55,12 +55,7 @@ public class GameManager : MonoBehaviour
             _cloud.Login(LoginNetwork.Email.Describe(), email, password, Bundle.CreateObject("preventRegistration", true)).Done(gamer => {
                 _gamer = gamer;
 
-                if (_eventLoop != null)
-                    _eventLoop.Stop();
-
-                _eventLoop = gamer.StartEventLoop();
-                _eventLoop.ReceivedEvent += Loop_ReceivedEvent;
-                FindObjectOfType<UIController>().ActivePanel = UIController.UIPanel.None;
+                LoggedIn();
 
             }, ex => {
                 CotcException error = (CotcException)ex;
@@ -125,10 +120,12 @@ public class GameManager : MonoBehaviour
         _cloud.Login(LoginNetwork.Email.Describe(), email, password).Done(gamer => {
             _gamer = gamer;
 
-            if (_eventLoop != null)
-                _eventLoop.Stop();
-            _eventLoop = gamer.StartEventLoop();
-            _eventLoop.ReceivedEvent += Loop_ReceivedEvent;
+            Bundle profileUpdates = Bundle.CreateObject();
+            profileUpdates["displayName"] = new Bundle(pseudo);
+
+            _gamer.Profile.Set(profileUpdates);
+
+            LoggedIn();
         }, ex => {
             CotcException error = (CotcException)ex;
             Debug.LogError("Failed to login: " + error.ErrorCode + " (" + error.HttpStatusCode + ")");
@@ -140,6 +137,17 @@ public class GameManager : MonoBehaviour
     private void Loop_ReceivedEvent(DomainEventLoop sender, EventLoopArgs e)
     {
         Debug.Log("Received event of type " + e.Message.Type + ": " + e.Message.ToJson());
+    }
+
+    private void LoggedIn()
+    {
+        if (_eventLoop != null)
+            _eventLoop.Stop();
+
+        _eventLoop = _gamer.StartEventLoop();
+        _eventLoop.ReceivedEvent += Loop_ReceivedEvent;
+
+        FindObjectOfType<UIController>().ActivePanel = UIController.UIPanel.None;
     }
     #endregion //Private Methods
 
