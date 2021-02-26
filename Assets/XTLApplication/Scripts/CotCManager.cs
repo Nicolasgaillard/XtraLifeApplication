@@ -38,11 +38,6 @@ public class CotCManager : MonoBehaviour
             };
         });
     }
-
-    void Update()
-    {
-        
-    }
     #endregion //Monobehaviour
 
     #region Public Methods
@@ -125,6 +120,8 @@ public class CotCManager : MonoBehaviour
 
             _gamer.Profile.Set(profileUpdates);
 
+            SaveCredentials(email, password);
+
             LoggedIn();
         }, ex => {
             CotcException error = (CotcException)ex;
@@ -148,6 +145,12 @@ public class CotCManager : MonoBehaviour
         _eventLoop.ReceivedEvent += Loop_ReceivedEvent;
 
         FindObjectOfType<UIController>().ActivePanel = UIController.UIPanel.None;
+    }
+
+    private void SaveCredentials(string email, string password)
+    {
+        PlayerPrefs.SetString("userId", email);
+        PlayerPrefs.SetString("userPassword", password);
     }
     #endregion //Private Methods
 

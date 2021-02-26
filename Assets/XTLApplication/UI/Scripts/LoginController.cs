@@ -14,8 +14,8 @@ public class LoginController : MonoBehaviour
 
     void Start()
     {
-        EmailField.text = "ginixaf242@geeky83.com";
-        PasswordField.text = "azerty1234";
+        EmailField.text = PlayerPrefs.GetString("userId");
+        PasswordField.text = PlayerPrefs.GetString("userPassword");
 
         DisabledLoginButton.interactable = false;
 
