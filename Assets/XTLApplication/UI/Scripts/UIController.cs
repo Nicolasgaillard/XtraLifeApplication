@@ -15,6 +15,8 @@ public class UIController : MonoBehaviour
         Login = 1,
         ResetPassword = 2,
         Register = 3,
+        SplashScreen = 4,
+        Skin = 5,
     }
 
     public UIPanel BasePanel;

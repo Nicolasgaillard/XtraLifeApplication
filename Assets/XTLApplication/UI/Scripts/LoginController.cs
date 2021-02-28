@@ -26,7 +26,7 @@ public class LoginController : MonoBehaviour
     {
         if(!string.IsNullOrEmpty(EmailField.text) && !string.IsNullOrEmpty(PasswordField.text))
         {
-            FindObjectOfType<CotCManager>().LogIn(EmailField.text, PasswordField.text);
+            FindObjectOfType<GameManager>().LogIn(EmailField.text, PasswordField.text);
         }
         else
         {
