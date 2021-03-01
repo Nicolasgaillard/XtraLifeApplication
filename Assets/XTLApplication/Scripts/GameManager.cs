@@ -182,15 +182,11 @@ public class GameManager : MonoBehaviour
 
     public void DisplayBestScore()
     {
-        _gamer.Scores.Domain("private").BestHighScores("runBoard", 3, 1)
+        _gamer.Scores.Domain("private").BestHighScores("runBoard", 10, 1)
             .Done(bestHighScoresRes =>
             {
-                TextMeshProUGUI bestScoreLabel = GameObject.FindGameObjectWithTag("BestScore").GetComponent<TextMeshProUGUI>();
-
-                foreach (var score in bestHighScoresRes)
-                {
-                    bestScoreLabel.text += string.Format("{0} {1} : {2}\n", score.Rank, score.GamerInfo["profile"]["displayName"], score.Value);
-                }
+                FindObjectOfType<LeaderBoardController>().SetData(bestHighScoresRes);
+                Debug.LogWarning("score");
             }, ex =>
             {
                 // The exception should always be CotcException
@@ -223,6 +219,8 @@ public class GameManager : MonoBehaviour
 
         GetUserColor();
         GetUserTravelledDistance();
+
+        DisplayBestScore();
     }
 
     private void SaveCredentials(string email, string password)
