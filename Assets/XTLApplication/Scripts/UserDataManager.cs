@@ -50,6 +50,7 @@ public class UserDataManager
             Debug.LogError("Could not set user travelled distance due to error: " + error.ErrorCode + " (" + error.ErrorInformation + ")");
         });
     }
+
     public void GetUserTravelledDistance(Gamer gamer, GameManager manager)
     {
         gamer.GamerVfs.Domain("private").GetValue("TravelledDistance").Done(getUserValueRes => {
@@ -67,11 +68,9 @@ public class UserDataManager
     {
         Bundle value = Bundle.CreateObject("running", distance);
         gamer.Transactions.Post(value).Done(result => {
-            Debug.LogWarning(result.TriggeredAchievements.Count);
-            foreach (var v in result.TriggeredAchievements)
+            foreach (var achievement in result.TriggeredAchievements)
             {
-                Debug.LogWarning(v.Key);
-                Debug.LogWarning(v.Value);
+                manager.GetNewAchievement(achievement.Key);
             }
         });
     }
@@ -81,10 +80,9 @@ public class UserDataManager
         gamer.Achievements.Domain("private").List().Done(listAchievementsRes => {
             foreach (var achievement in listAchievementsRes)
             {
-                Debug.LogWarning(achievement.Key + " : " + achievement.Value.Config.ToString());
+                Debug.Log(achievement.Key + " : " + achievement.Value.Config.ToString());
             }
         }, ex => {
-            // The exception should always be CotcException
             CotcException error = (CotcException)ex;
             Debug.LogError("Could not list achievements: " + error.ErrorCode + " (" + error.ErrorInformation + ")");
         });

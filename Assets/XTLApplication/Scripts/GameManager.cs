@@ -171,7 +171,7 @@ public class GameManager : MonoBehaviour
 
             SaveCredentials(email, password);
 
-            LoggedIn();
+            LoggedIn(false);
         }, ex => {
             CotcException error = (CotcException)ex;
             Debug.LogError("Failed to login: " + error.ErrorCode + " (" + error.HttpStatusCode + ")");
@@ -211,9 +211,9 @@ public class GameManager : MonoBehaviour
         _previousTravelledDistance = distance;
     }
 
-    public void GetNewAchievement()
+    public void GetNewAchievement(string achivementName)
     {
-
+        FindObjectOfType<AchievementController>().PopupAchievement(achivementName);
     }
 #endregion //Public Methods
 
@@ -223,7 +223,7 @@ public class GameManager : MonoBehaviour
         Debug.LogWarning("Received event of type " + e.Message.Type + ": " + e.Message.ToJson());
     }
 
-    private void LoggedIn()
+    private void LoggedIn(bool fetchData = true)
     {
         if (_eventLoop != null)
             _eventLoop.Stop();
@@ -243,9 +243,12 @@ public class GameManager : MonoBehaviour
             child.gameObject.SetActive(true);
         }
         
+        if(fetchData)
+            GetUserData();
 
-        GetUserData();
         DisplayBestScore();
+
+        //FindObjectOfType<UIController>().DisplayInformation(string.Format("Hi {0}, you are now login.", _gamer.Profile));
     }
 
     private void SaveCredentials(string email, string password)
