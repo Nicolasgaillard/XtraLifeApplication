@@ -17,6 +17,7 @@ public class UIController : MonoBehaviour
         Register = 3,
         SplashScreen = 4,
         Skin = 5,
+        Tutorial = 6,
     }
 
     public UIPanel BasePanel;

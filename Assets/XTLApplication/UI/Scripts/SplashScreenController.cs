@@ -6,6 +6,6 @@ public class SplashScreenController : MonoBehaviour
 {
     public void Continue()
     {
-        FindObjectOfType<UIController>().ActivePanel = UIController.UIPanel.Login;
+        FindObjectOfType<UIController>().ActivePanel = UIController.UIPanel.Tutorial;
     }
 }

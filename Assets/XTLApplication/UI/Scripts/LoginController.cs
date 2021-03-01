@@ -8,7 +8,7 @@ public class LoginController : MonoBehaviour
 {
     public TMP_InputField EmailField, PasswordField;
 
-    public Button DisabledLoginButton;
+    public Button DisabledLoginButton, DisabledResetPasswordButton;
 
     private UIController _controller;
 
@@ -18,6 +18,7 @@ public class LoginController : MonoBehaviour
         PasswordField.text = PlayerPrefs.GetString("userPassword");
 
         DisabledLoginButton.interactable = false;
+        DisabledResetPasswordButton.interactable = false;
 
         _controller = FindObjectOfType<UIController>();
     }
