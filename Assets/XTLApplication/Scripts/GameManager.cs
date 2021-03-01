@@ -14,6 +14,8 @@ public class GameManager : MonoBehaviour
     public Gamer Gamer { get => _gamer; set => _gamer = value; }
     private DomainEventLoop _eventLoop;
 
+    private UserDataManager _dataManager;
+
     private bool _isLoggedIn = false;
 
     public Material CharacterMaterial;
@@ -22,7 +24,7 @@ public class GameManager : MonoBehaviour
 
     private CameraController _cameraController;
 
-    private float _travelledDistance = 0;
+    public float _currentTravelledDistance, _previousTravelledDistance;
     private Vector3 _previousPlayerPosition;
     #endregion //Properties
 
@@ -30,6 +32,8 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         DontDestroyOnLoad(gameObject);
+
+        _dataManager = new UserDataManager();
 
         Promise.UnhandledException += (object sender, ExceptionEventArgs e) => {
             Debug.LogError("Unhandled exception: " + e.Exception.ToString());
@@ -69,8 +73,15 @@ public class GameManager : MonoBehaviour
                 FindObjectOfType<UIController>().ActivePanel = UIController.UIPanel.Skin;
             }
 
-            _travelledDistance += Vector3.Distance(_playerBody.transform.position, _previousPlayerPosition);
+            _currentTravelledDistance += Vector3.Distance(_playerBody.transform.position, _previousPlayerPosition);
             _previousPlayerPosition = _playerBody.transform.position;
+
+            if(_currentTravelledDistance >= 10)
+            {
+                SaveUserTravelledDistance();
+                _previousTravelledDistance += _currentTravelledDistance;
+                _currentTravelledDistance = 0;
+            }
         }
     }
 #endregion //Monobehaviour
@@ -194,12 +205,22 @@ public class GameManager : MonoBehaviour
                 Debug.LogError("Could not get best high scores: " + error.ErrorCode + " (" + error.ErrorInformation + ")");
             });
     }
+
+    public void SetPreviousTravelledDistance(float distance)
+    {
+        _previousTravelledDistance = distance;
+    }
+
+    public void GetNewAchievement()
+    {
+
+    }
 #endregion //Public Methods
 
 #region Private methods
     private void Loop_ReceivedEvent(DomainEventLoop sender, EventLoopArgs e)
     {
-        Debug.Log("Received event of type " + e.Message.Type + ": " + e.Message.ToJson());
+        Debug.LogWarning("Received event of type " + e.Message.Type + ": " + e.Message.ToJson());
     }
 
     private void LoggedIn()
@@ -215,11 +236,15 @@ public class GameManager : MonoBehaviour
         FindObjectOfType<UIController>().ActivePanel = UIController.UIPanel.Skin;
         _cameraController.StopRotateAroundTheWorld();
         _playerBody = Instantiate(CharacterBody).transform.GetChild(1).gameObject;
-        _cameraController.DisableCamera();
+        _cameraController.SetupPlayerCamera();
 
-        GetUserColor();
-        GetUserTravelledDistance();
+        foreach(Transform child in GameObject.Find("IgnorePanel").transform)
+        {
+            child.gameObject.SetActive(true);
+        }
+        
 
+        GetUserData();
         DisplayBestScore();
     }
 
@@ -229,65 +254,40 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetString("userPassword", password);
     }
 
-    public void SaveUserColor(Color c)
+    #region User Data
+    private void GetUserData()
     {
-        string color = string.Format("{0}/{1}/{2}/{3}", c.r, c.g, c.b, c.a);
+        GetUserColor();
+        GetUserTravelledDistance();
+        GetUserAchievments();
+    }
 
-        Bundle value = new Bundle(color);
-        _gamer.GamerVfs.Domain("private").SetValue("CharacterColor", value)
-        .Done(setUserValueRes => {
-            Debug.Log("User data set: " + setUserValueRes.ToString());
-        }, ex => {
-            CotcException error = (CotcException)ex;
-            Debug.LogError("Could not set user color due to error: " + error.ErrorCode + " (" + error.ErrorInformation + ")");
-        });
+    public void SaveUserBodyColor(Color c)
+    {
+        _dataManager.SaveUserBodyColor(_gamer, c);
     }
 
     private void GetUserColor()
     {
-        _gamer.GamerVfs.Domain("private").GetValue("CharacterColor").Done(getUserValueRes => {
-            Bundle result = getUserValueRes["result"];
-
-            string color = result["CharacterColor"];
-            string[] rgba = color.Split('/');
-
-            Color c = new Color();
-            c.r = float.Parse(rgba[0]);
-            c.g = float.Parse(rgba[1]);
-            c.b = float.Parse(rgba[2]);
-            c.a = float.Parse(rgba[3]);
-
-            CharacterMaterial.color = c;
-        }, ex => {
-            CotcException error = (CotcException)ex;
-            Debug.LogError("Could not get user color due to error: " + error.ErrorCode + " (" + error.ErrorInformation + ")");
-        });
+        _dataManager.GetUserBodyColor(_gamer, CharacterMaterial);
     }
 
     private void SaveUserTravelledDistance()
     {
-        Bundle value = new Bundle(_travelledDistance);
-        _gamer.GamerVfs.Domain("private").SetValue("TravelledDistance", value)
-        .Done(setUserValueRes => {
-            Debug.Log("User data set: " + setUserValueRes.ToString());
-        }, ex => {
-            CotcException error = (CotcException)ex;
-            Debug.LogError("Could not set user travelled distance due to error: " + error.ErrorCode + " (" + error.ErrorInformation + ")");
-        });
+        _dataManager.SaveUserTravelledDistance(_gamer, _previousTravelledDistance + _currentTravelledDistance);
+        _dataManager.UserTravelledDistanceTransaction(_gamer, _currentTravelledDistance, this);
     }
 
     private void GetUserTravelledDistance()
     {
-        _gamer.GamerVfs.Domain("private").GetValue("TravelledDistance").Done(getUserValueRes => {
-            Bundle result = getUserValueRes["result"];
-
-            string distance = result["TravelledDistance"];
-            _travelledDistance = float.Parse(distance);
-        }, ex => {
-            CotcException error = (CotcException)ex;
-            Debug.LogError("Could not get user travelled distance due to error: " + error.ErrorCode + " (" + error.ErrorInformation + ")");
-        });
+        _dataManager.GetUserTravelledDistance(_gamer, this);
     }
+
+    private void GetUserAchievments()
+    {
+        _dataManager.GetUserAchievements(_gamer, this);
+    }
+    #endregion //User Data
 
     private IEnumerator Exit()
     {

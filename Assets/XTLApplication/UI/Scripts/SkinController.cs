@@ -10,7 +10,7 @@ public class SkinController : MonoBehaviour
     public void SetSkin(Image img)
     {
         _avatarMaterial.color = img.color;
-        FindObjectOfType<GameManager>().SaveUserColor(img.color);
+        FindObjectOfType<GameManager>().SaveUserBodyColor(img.color);
         FindObjectOfType<UIController>().ActivePanel = UIController.UIPanel.None;
     }
 }

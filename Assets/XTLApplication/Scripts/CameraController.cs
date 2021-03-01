@@ -34,7 +34,7 @@ public class CameraController : MonoBehaviour
         _isRotatingCameraAroundTheWorld = false;
     }
 
-    public void DisableCamera()
+    public void SetupPlayerCamera()
     {
         /*
         Camera.main.transform.SetParent(GameObject.FindGameObjectWithTag("ParentPlayerCamera").transform);
