@@ -184,6 +184,7 @@ public class GameManager : MonoBehaviour
             "context for score", false)
             .Done(postScoreRes => {
                 Debug.Log("Post score: " + postScoreRes.ToString());
+                DisplayBestScore();
             }, ex => {
                         // The exception should always be CotcException
                         CotcException error = (CotcException)ex;
@@ -197,7 +198,6 @@ public class GameManager : MonoBehaviour
             .Done(bestHighScoresRes =>
             {
                 FindObjectOfType<LeaderBoardController>().SetData(bestHighScoresRes);
-                Debug.LogWarning("score");
             }, ex =>
             {
                 // The exception should always be CotcException

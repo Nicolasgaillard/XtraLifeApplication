@@ -42,9 +42,10 @@ public class CheckPointManager : MonoBehaviour
     public void StopGame()
     {
         _isPlaying = false;
+        _activeCheckPoint = 0;
+        SetNextPoint();
 
         FindObjectOfType<GameManager>().SaveScore(Timer);
-        FindObjectOfType<GameManager>().DisplayBestScore();
 
     }
 
