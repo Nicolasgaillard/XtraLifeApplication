@@ -52,6 +52,10 @@ public class UIController : MonoBehaviour
                     ClosePopup();
                 }
             }
+            else
+            {
+                ActivePanel = UIPanel.None;
+            }
         }
     }
 
@@ -59,7 +63,9 @@ public class UIController : MonoBehaviour
     {
         for(int i = 0; i < transform.childCount; i++)
         {
-            transform.GetChild(i).gameObject.SetActive(false);
+            GameObject child = transform.GetChild(i).gameObject;
+            if(child.name != "IgnorePanel")
+                transform.GetChild(i).gameObject.SetActive(false);
         }
 
         ActivePanel = BasePanel;

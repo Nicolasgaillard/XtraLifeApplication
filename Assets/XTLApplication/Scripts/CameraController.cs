@@ -6,6 +6,8 @@ public class CameraController : MonoBehaviour
 {
     private bool _isRotatingCameraAroundTheWorld = false;
 
+    public Canvas BaseCanvas;
+
     [SerializeField]
     private float _cameraRotationSpeed;
 
@@ -34,6 +36,9 @@ public class CameraController : MonoBehaviour
 
     public void DisableCamera()
     {
-        gameObject.SetActive(false);
+        /*
+        Camera.main.transform.SetParent(GameObject.FindGameObjectWithTag("ParentPlayerCamera").transform);
+        Camera.main.transform.localPosition = new Vector3(0, -0.3f, -3.3f);
+        */
     }
 }

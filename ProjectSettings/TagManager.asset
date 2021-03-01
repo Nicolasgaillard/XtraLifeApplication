@@ -7,6 +7,7 @@ TagManager:
   - Fire
   - Score
   - BestScore
+  - ParentPlayerCamera
   layers:
   - Default
   - TransparentFX

@@ -20,7 +20,10 @@ namespace UnityStandardAssets.Cameras
 
         protected virtual void Awake()
         {
-            // find the camera in the object hierarchy
+            Camera.main.transform.SetParent(transform.GetChild(0));
+            Camera.main.transform.position = new Vector3(0, -0.3f, -3.3f);
+            Camera.main.transform.rotation = Quaternion.Euler(Vector3.zero);
+
             m_Cam = GetComponentInChildren<Camera>().transform;
             m_Pivot = m_Cam.parent;
         }
